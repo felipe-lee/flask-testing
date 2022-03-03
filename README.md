@@ -5,6 +5,15 @@ Going through the [Flask tutorial](https://flask.palletsprojects.com/en/2.0.x/tu
 
 ## Getting started
 
+You can optionally install `direnv`, which means you can leave out the `FLASK_APP=flaskr` out from 
+commands below. You can also run 
+
+```shell
+export FLASK_APP=flaskr
+```
+
+if you'd rather not add it to each command that needs it.
+
 1. You'll need python installed, up to you how. The version that you need is listed in the `pyproject.toml` file and will
     look something like this:
 
