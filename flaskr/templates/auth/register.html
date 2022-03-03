@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Register{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    {% set submit_value='Register' %}
+    {% include 'auth/login_form.html' %}
+{% endblock %}

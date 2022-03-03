@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Log In{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    {% set submit_value='Log In' %}
+    {% include 'auth/login_form.html' %}
+{% endblock %}
