@@ -3,6 +3,7 @@
 Code to handle auth in the project
 """
 import functools
+from typing import Any, Callable, TypeVar, Union, cast
 
 from flask import (
     Blueprint,
@@ -14,6 +15,7 @@ from flask import (
     session,
     url_for,
 )
+from werkzeug import Response
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from flaskr.db import get_db
@@ -23,7 +25,14 @@ bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
 @bp.route("/register", methods=("GET", "POST"))
-def register():
+def register() -> Union[str, Response]:
+    """
+    Allows a user to register for the website.
+
+    Returns:
+        Either the registration template (if first time through, or if there is invalid data in the
+        form) or a redirect to the login page (if registration is successful).
+    """
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -55,7 +64,14 @@ def register():
 
 
 @bp.route("/login", methods=("GET", "POST"))
-def login():
+def login() -> Union[str, Response]:
+    """
+    Allows a user to log in to the website.
+
+    Returns:
+        Either the login template (if first time through, or if there is invalid data in the
+        form) or a redirect to the index page (if login is successful).
+    """
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -84,7 +100,10 @@ def login():
 
 
 @bp.before_app_request
-def load_logged_in_user():
+def load_logged_in_user() -> None:
+    """
+    Grabs the user ID from the session and attempts to load the user into the global context.
+    """
     user_id = session.get("user_id")
 
     if user_id is None:
@@ -96,17 +115,48 @@ def load_logged_in_user():
 
 
 @bp.route("/logout")
-def logout():
+def logout() -> Response:
+    """
+    Clears the user's session and redirects to the index.
+
+    Returns:
+        Redirect to the index page.
+    """
     session.clear()
+
     return redirect(url_for("index"))
 
 
-def login_required(view):
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+def login_required(view: F) -> F:
+    """
+    Decorator that view functions can use to ensure the user is logged in before regular view logic
+    runs.
+
+    Args:
+        view (): Function to decorate.
+
+    Returns:
+        Decorated function
+    """
+
     @functools.wraps(view)
     def wrapped_view(**kwargs):
+        """
+        Checks if the user is logged in. If so, calls view with kwargs, otherwise, redirects to the
+        login page.
+
+        Args:
+            **kwargs (): kwargs for view.
+
+        Returns:
+            Either the return value of the wrapped view, or a redirect to the login page.
+        """
         if g.user is None:
             return redirect(url_for("auth.login"))
 
         return view(**kwargs)
 
-    return wrapped_view
+    return cast(F, wrapped_view)
