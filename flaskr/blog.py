@@ -112,7 +112,7 @@ def get_post(
     return post
 
 
-@bp.route("/<int:id>/update", methods=("GET", "POST"))
+@bp.route("/<int:post_id>/update", methods=("GET", "POST"))
 @login_required
 def update(post_id: int) -> Union[str, Response]:
     """
@@ -149,7 +149,7 @@ def update(post_id: int) -> Union[str, Response]:
     return render_template("blog/update.html", post=post)
 
 
-@bp.route("/<int:id>/delete", methods=("POST",))
+@bp.route("/<int:post_id>/delete", methods=("POST",))
 @login_required
 def delete(post_id: int) -> Response:
     """
