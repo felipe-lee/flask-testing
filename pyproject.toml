@@ -19,6 +19,13 @@ pytest-cov = "^3.0.0"
 pytest-mock = "^3.7.0"
 mypy = "^0.931"
 
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--cov -ra -q"
+testpaths = [
+    "tests"
+]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
