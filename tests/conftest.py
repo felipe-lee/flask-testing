@@ -2,8 +2,6 @@
 """
 Fixtures for tests
 """
-import os
-import tempfile
 from pathlib import Path
 from typing import Iterable
 
@@ -16,18 +14,17 @@ from flaskr.db import execute_sql_script, init_db
 
 
 @pytest.fixture
-def app() -> Iterable[Flask]:
+def app(tmp_path: Path) -> Iterable[Flask]:
     """
-    Initialize temp file for database and set up the app. Handle
+    Initialize app with test config, initialize DB, set up data fixtures, and yield initialized app.
+
     Returns:
-
+        initialized app, ready for use
     """
-    db_fd, db_path = tempfile.mkstemp()
-
     app = create_app(
         {
             "TESTING": True,
-            "DATABASE": db_path,
+            "DATABASE": tmp_path / "test_db.sqlite",
         }
     )
 
@@ -39,9 +36,6 @@ def app() -> Iterable[Flask]:
         execute_sql_script(path_to_file)
 
     yield app
-
-    os.close(db_fd)
-    os.unlink(db_path)
 
 
 @pytest.fixture
