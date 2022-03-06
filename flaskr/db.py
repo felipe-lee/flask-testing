@@ -3,8 +3,8 @@
 Contains logic for opening and closing the DB connection
 """
 import sqlite3
+from pathlib import Path
 from sqlite3 import Connection
-from typing import cast
 
 import click
 from flask import Flask, current_app, g
@@ -40,16 +40,26 @@ def close_db(e=None) -> None:
         db.close()
 
 
+def execute_sql_script(path_to_file: Path, /) -> None:
+    """
+    Executes a SQL script against the database.
+
+    Args:
+        path_to_file: Path to SQL script.
+    """
+    db = get_db()
+
+    with open(path_to_file, "rb") as f:
+        db.executescript(f.read().decode("utf8"))
+
+
 def init_db() -> None:
     """
     Gets a connection to the DB and then executes the schema file on the DB.
     """
-    db = get_db()
+    path_to_file = Path(current_app.root_path) / "schema.sql"
 
-    with current_app.open_resource("schema.sql") as f:
-        file_contents = cast(bytes, f.read())
-
-        db.executescript(file_contents.decode("utf8"))
+    execute_sql_script(path_to_file)
 
 
 @click.command("init-db")
