@@ -45,11 +45,6 @@ def create_app(test_config: Mapping[str, Any] = None) -> Flask:
     except OSError:
         pass
 
-    # a simple page that says hello
-    @app.route("/hello")
-    def hello():
-        return "Hello, World!"
-
     from . import db
 
     db.init_app(app)
