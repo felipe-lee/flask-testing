@@ -11,6 +11,9 @@ from flask import Flask, current_app, g
 from flask.cli import with_appcontext
 
 
+DB_KEY = "db"
+
+
 def get_db() -> Connection:
     """
     If a DB connection hasn't already been initialized into the global context, it will create a new
@@ -19,10 +22,11 @@ def get_db() -> Connection:
     Returns:
         A connection to the DB.
     """
-    if "db" not in g:
+    if DB_KEY not in g:
         g.db = sqlite3.connect(
             current_app.config["DATABASE"], detect_types=sqlite3.PARSE_DECLTYPES
         )
+
         g.db.row_factory = sqlite3.Row
 
     return g.db
@@ -34,7 +38,7 @@ def close_db(e=None) -> None:
     Args:
         e (): I have no idea...the tutorial didn't say anything about this...
     """
-    db = g.pop("db", None)
+    db = g.pop(DB_KEY, None)
 
     if db is not None:
         db.close()
