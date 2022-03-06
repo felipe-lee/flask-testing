@@ -40,9 +40,27 @@ def app(tmp_path: Path) -> Iterable[Flask]:
 
 @pytest.fixture
 def client(app: Flask) -> FlaskClient:
+    """
+    Returns a test client to interact with the initialized flask app.
+
+    Args:
+        app: initialized app 
+
+    Returns:
+        Client that can be used to interact with initialized app.
+    """
     return app.test_client()
 
 
 @pytest.fixture
 def runner(app: Flask) -> FlaskCliRunner:
+    """
+    Returns a CLI client that can run click commands.
+    
+    Args:
+        app: initialized app
+
+    Returns:
+        Runner that can utilize click commands.
+    """
     return app.test_cli_runner()
