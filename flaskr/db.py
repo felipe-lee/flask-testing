@@ -66,7 +66,7 @@ def init_db() -> None:
     execute_sql_script(path_to_file)
 
 
-@click.command("init-db")
+@click.command("init-db-old")
 @with_appcontext
 def init_db_command() -> None:
     """

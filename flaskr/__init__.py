@@ -27,9 +27,11 @@ def create_app(test_config: Mapping[str, Any] = None) -> Flask:
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
 
+    db_path = os.path.join(app.instance_path, "flaskr.sqlite")
     app.config.from_mapping(
         SECRET_KEY=os.environ["SECRET_KEY"],
-        DATABASE=os.path.join(app.instance_path, "flaskr.sqlite"),
+        SQLALCHEMY_DATABASE_URI=f"sqlite:////{db_path}",
+        DATABASE=os.path.join(app.instance_path, "flaskr-old.sqlite"),
     )
 
     if test_config is None:
@@ -44,6 +46,10 @@ def create_app(test_config: Mapping[str, Any] = None) -> Flask:
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    from .models import init_app
+
+    init_app(app)
 
     from . import db
 
