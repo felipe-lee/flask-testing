@@ -28,10 +28,16 @@ def create_app(test_config: Mapping[str, Any] = None) -> Flask:
     app = Flask(__name__, instance_relative_config=True)
 
     db_path = os.path.join(app.instance_path, "flaskr.sqlite")
+
+    sqlalchemy_track_modifications = (
+        os.environ.get("sqlalchemy_track_modifications", "False").lower() == "true"
+    )
+
     app.config.from_mapping(
+        DATABASE=os.path.join(app.instance_path, "flaskr-old.sqlite"),
         SECRET_KEY=os.environ["SECRET_KEY"],
         SQLALCHEMY_DATABASE_URI=f"sqlite:////{db_path}",
-        DATABASE=os.path.join(app.instance_path, "flaskr-old.sqlite"),
+        SQLALCHEMY_TRACK_MODIFICATIONS=sqlalchemy_track_modifications,
     )
 
     if test_config is None:
