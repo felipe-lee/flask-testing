@@ -5,13 +5,14 @@ Database models for app
 import click
 from flask import Flask, current_app
 from flask.cli import with_appcontext
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import DefaultMeta, SQLAlchemy
 
 
 db = SQLAlchemy()
+BaseModel: DefaultMeta = db.Model
 
 
-class User(db.Model):
+class User(BaseModel):
     """
     Site user
     """
@@ -21,7 +22,7 @@ class User(db.Model):
     password = db.Column(db.Text, nullable=False)
 
 
-class Post(db.Model):
+class Post(BaseModel):
     """
     User posts
     """
