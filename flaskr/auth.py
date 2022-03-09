@@ -15,10 +15,11 @@ from flask import (
     session,
     url_for,
 )
+from sqlalchemy.exc import IntegrityError
 from werkzeug import Response
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from flaskr.db import get_db
+from flaskr.models import User, db
 
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -37,8 +38,6 @@ def register() -> Union[str, Response]:
         username = request.form["username"]
         password = request.form["password"]
 
-        db = get_db()
-
         error = None
 
         if not username:
@@ -47,13 +46,13 @@ def register() -> Union[str, Response]:
             error = "Password is required."
 
         if error is None:
+            user = User(username=username, password=generate_password_hash(password))
+
+            db.session.add(user)
+
             try:
-                db.execute(
-                    "INSERT INTO user (username, password) VALUES (?, ?)",
-                    (username, generate_password_hash(password)),
-                )
-                db.commit()
-            except db.IntegrityError:
+                db.session.commit()
+            except IntegrityError:
                 error = f"User {username} is already registered."
             else:
                 return redirect(url_for("auth.login"))
@@ -76,21 +75,17 @@ def login() -> Union[str, Response]:
         username = request.form["username"]
         password = request.form["password"]
 
-        db = get_db()
-
         error = None
 
-        user = db.execute(
-            "SELECT * FROM user WHERE username = ?", (username,)
-        ).fetchone()
+        user = User.query.filter_by(username=username).first()
 
-        if user is None or not check_password_hash(user["password"], password):
+        if user is None or not check_password_hash(user.password, password):
             error = "Incorrect credentials."
 
         if error is None:
             session.clear()
 
-            session["user_id"] = user["id"]
+            session["user_id"] = user.id
 
             return redirect(url_for("index"))
 
@@ -109,9 +104,7 @@ def load_logged_in_user() -> None:
     if user_id is None:
         g.user = None
     else:
-        g.user = (
-            get_db().execute("SELECT * FROM user WHERE id = ?", (user_id,)).fetchone()
-        )
+        g.user = User.query.get(user_id)
 
 
 @bp.route("/logout")
