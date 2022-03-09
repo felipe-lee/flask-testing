@@ -2,7 +2,7 @@
 """
 Code to handle blog and posts
 """
-from typing import Any, Union
+from typing import Union
 
 from flask import (
     Blueprint,
@@ -14,10 +14,11 @@ from flask import (
     request,
     url_for,
 )
+from sqlalchemy.orm import joinedload
 from werkzeug import Response
 
 from flaskr.auth import login_required
-from flaskr.db import get_db
+from flaskr.models import Post, db
 
 
 bp = Blueprint("blog", __name__)
@@ -31,13 +32,7 @@ def index() -> str:
     Returns:
         index template.
     """
-    db = get_db()
-
-    posts = db.execute(
-        "SELECT p.id, title, body, created, author_id, username"
-        " FROM post p JOIN user u ON p.author_id = u.id"
-        " ORDER BY created DESC"
-    ).fetchall()
+    posts = Post.query.options(joinedload("author"))
 
     return render_template("blog/index.html", posts=posts)
 
@@ -64,52 +59,18 @@ def create() -> Union[str, Response]:
         if error is not None:
             flash(error)
         else:
-            db = get_db()
-
-            db.execute(
-                "INSERT INTO post (title, body, author_id)" " VALUES (?, ?, ?)",
-                (title, body, g.user["id"]),
+            post = Post(
+                author=g.user,
+                title=title,
+                body=body,
             )
-            db.commit()
+
+            db.session.add(post)
+            db.session.commit()
 
             return redirect(url_for("blog.index"))
 
     return render_template("blog/create.html")
-
-
-def get_post(
-    post_id: int, /, *, check_author: bool = True
-) -> Any:  # todo: not a great type hint...need to look at what can be done instead.
-    """
-    Grabs a post from the DB. Can optionally check if the post author matches the logged-in user
-    (defaults to checking).
-
-    Args:
-        post_id (): ID of post to get from the DB.
-        check_author (): Boolean indicating if this function should ensure the post author is the
-            same as the logged-in user.
-
-    Returns:
-        The retrieved post.
-    """
-    post = (
-        get_db()
-        .execute(
-            "SELECT p.id, title, body, created, author_id, username"
-            " FROM post p JOIN user u ON p.author_id = u.id"
-            " WHERE p.id = ?",
-            (post_id,),
-        )
-        .fetchone()
-    )
-
-    if post is None:
-        abort(404, f"Post id {post_id} doesn't exist.")
-
-    if check_author and post["author_id"] != g.user["id"]:
-        abort(403)
-
-    return post
 
 
 @bp.route("/<int:post_id>/update", methods=("GET", "POST"))
@@ -122,7 +83,10 @@ def update(post_id: int) -> Union[str, Response]:
         Either the post edit template (if first time through, or if there is invalid data in the
         form) or a redirect to the index page (if post edit is successful).
     """
-    post = get_post(post_id)
+    post = Post.query.options(joinedload("author")).get_or_404(post_id)
+
+    if post.author.id != g.user.id:
+        abort(403)
 
     if request.method == "POST":
         title = request.form["title"]
@@ -136,13 +100,11 @@ def update(post_id: int) -> Union[str, Response]:
         if error is not None:
             flash(error)
         else:
-            db = get_db()
+            post.title = title
+            post.body = body
 
-            db.execute(
-                "UPDATE post SET title = ?, body = ?" " WHERE id = ?",
-                (title, body, post_id),
-            )
-            db.commit()
+            db.session.add(post)
+            db.session.commit()
 
             return redirect(url_for("blog.index"))
 
@@ -158,11 +120,12 @@ def delete(post_id: int) -> Response:
     Returns:
         Redirect to the index page.
     """
-    get_post(post_id)
+    post = Post.query.get_or_404(post_id)
 
-    db = get_db()
+    if post.author_id != g.user.id:
+        abort(403)
 
-    db.execute("DELETE FROM post WHERE id = ?", (post_id,))
-    db.commit()
+    db.session.delete(post)
+    db.session.commit()
 
     return redirect(url_for("blog.index"))
