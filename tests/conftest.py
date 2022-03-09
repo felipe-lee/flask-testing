@@ -11,7 +11,7 @@ from flask.testing import FlaskCliRunner, FlaskClient
 from werkzeug import Response
 
 from flaskr import create_app
-from flaskr.db import execute_sql_script, init_db
+from flaskr.models import db, init_db
 
 
 @pytest.fixture
@@ -25,16 +25,13 @@ def app(tmp_path: Path) -> Iterable[Flask]:
     app = create_app(
         {
             "TESTING": True,
-            "DATABASE": tmp_path / "test_db.sqlite",
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:////{tmp_path / 'test_db.sqlite'}",
         }
     )
 
     with app.app_context():
         init_db()
-
-        path_to_file = Path(__file__).parent / "data.sql"
-
-        execute_sql_script(path_to_file)
+        db.init_app(app)
 
     yield app
 

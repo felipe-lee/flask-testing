@@ -34,7 +34,6 @@ def create_app(test_config: Mapping[str, Any] = None) -> Flask:
     )
 
     app.config.from_mapping(
-        DATABASE=os.path.join(app.instance_path, "flaskr-old.sqlite"),
         SECRET_KEY=os.environ["SECRET_KEY"],
         SQLALCHEMY_DATABASE_URI=f"sqlite:////{db_path}",
         SQLALCHEMY_TRACK_MODIFICATIONS=sqlalchemy_track_modifications,
@@ -56,10 +55,6 @@ def create_app(test_config: Mapping[str, Any] = None) -> Flask:
     from .models import init_app
 
     init_app(app)
-
-    from . import db
-
-    db.init_app(app)
 
     from . import auth
 
