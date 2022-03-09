@@ -27,15 +27,19 @@ def create_app(test_config: Mapping[str, Any] = None) -> Flask:
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
 
-    db_path = os.path.join(app.instance_path, "flaskr.sqlite")
-
     sqlalchemy_track_modifications = (
         os.environ.get("sqlalchemy_track_modifications", "False").lower() == "true"
     )
 
+    sqlalchemy_database_uri = (
+        f"postgresql://{os.environ['POSTGRES_USER']}:"
+        f"{os.environ['POSTGRES_PASSWORD']}@{os.environ['POSTGRES_HOST']}:"
+        f"{os.environ['POSTGRES_PORT']}/{os.environ['POSTGRES_DB_NAME']}"
+    )
+
     app.config.from_mapping(
         SECRET_KEY=os.environ["SECRET_KEY"],
-        SQLALCHEMY_DATABASE_URI=f"sqlite:////{db_path}",
+        SQLALCHEMY_DATABASE_URI=sqlalchemy_database_uri,
         SQLALCHEMY_TRACK_MODIFICATIONS=sqlalchemy_track_modifications,
     )
 
