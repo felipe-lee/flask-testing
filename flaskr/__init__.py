@@ -34,7 +34,7 @@ def create_app(test_config: Mapping[str, Any] = None) -> Flask:
     sqlalchemy_database_uri = (
         f"postgresql://{os.environ['POSTGRES_USER']}:"
         f"{os.environ['POSTGRES_PASSWORD']}@{os.environ['POSTGRES_HOST']}:"
-        f"{os.environ['POSTGRES_PORT']}/{os.environ['POSTGRES_DB_NAME']}"
+        f"{os.environ['POSTGRES_HOST_PORT']}/{os.environ['POSTGRES_DB']}"
     )
 
     app.config.from_mapping(
