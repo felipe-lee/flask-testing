@@ -2,35 +2,39 @@
 """
 Fixtures for tests
 """
-from pathlib import Path
 from typing import Iterable
 
 import pytest
+from _pytest.tmpdir import TempPathFactory
 from flask import Flask
 from flask.testing import FlaskCliRunner, FlaskClient
 from werkzeug import Response
 
 from flaskr import create_app
-from flaskr.models import db, init_db
+from flaskr.models import db
+from tests.factories import UserFactory
 
 
-@pytest.fixture
-def app(tmp_path: Path) -> Iterable[Flask]:
+@pytest.fixture(scope="session")
+def app(tmp_path_factory: TempPathFactory) -> Iterable[Flask]:
     """
     Initialize app with test config, initialize DB, set up data fixtures, and yield initialized app.
 
     Returns:
         initialized app, ready for use
     """
+    db_path = tmp_path_factory.mktemp("test_db") / "test_db.sqlite"
+
     app = create_app(
         {
             "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": f"sqlite:////{tmp_path / 'test_db.sqlite'}",
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:////{db_path}",
         }
     )
 
     with app.app_context():
-        init_db()
+        db.create_all()
+
         db.init_app(app)
 
     yield app

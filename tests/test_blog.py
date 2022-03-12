@@ -9,7 +9,7 @@ from flask import Flask
 from flask.testing import FlaskClient
 from werkzeug import Response
 
-from flaskr.db import get_db
+from flaskr.models import Post, db
 from tests.conftest import AuthActions
 
 
@@ -83,11 +83,12 @@ def test_login_required(client: FlaskClient, path: str) -> None:
 def test_author_required(app: Flask, client: FlaskClient, auth: AuthActions) -> None:
     # change the post author to another user
     with app.app_context():
-        db = get_db()
+        post = Post.query.first()
 
-        db.execute("UPDATE post SET author_id = 2 WHERE id = 1")
+        post.author_id = 2
 
-        db.commit()
+        db.session.add(post)
+        db.session.commit()
 
     auth.login()
 
@@ -122,9 +123,7 @@ def test_can_create_a_post(client: FlaskClient, auth: AuthActions, app: Flask) -
     client.post("/create", data={"title": "created", "body": ""})
 
     with app.app_context():
-        db = get_db()
-
-        count = db.execute("SELECT COUNT(id) FROM post").fetchone()[0]
+        count = Post.query.count()
 
         assert count == 2
 
@@ -137,11 +136,9 @@ def test_can_update_a_post(client: FlaskClient, auth: AuthActions, app: Flask) -
     client.post("/1/update", data={"title": "updated", "body": ""})
 
     with app.app_context():
-        db = get_db()
+        post = Post.query.get(1)
 
-        post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
-
-        assert post["title"] == "updated"
+        assert post.title == "updated"
 
 
 @pytest.mark.parametrize(
@@ -169,8 +166,6 @@ def test_can_delete_a_post(client: FlaskClient, auth: AuthActions, app: Flask) -
     assert response.headers["Location"] == "http://localhost/"
 
     with app.app_context():
-        db = get_db()
-
-        post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
+        post = Post.query.get(1)
 
         assert post is None

@@ -37,21 +37,14 @@ class Post(BaseModel):
     )
 
 
-def init_db() -> None:
-    """
-    Creates new tables based on models.
-    """
-    with current_app.app_context():
-        db.create_all()
-
-
 @click.command("init-db")
 @with_appcontext
 def init_db_command() -> None:
     """
     Command to create new tables.
     """
-    init_db()
+    with current_app.app_context():
+        db.create_all()
 
     click.echo("Initialized the database.")
 
