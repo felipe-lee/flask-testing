@@ -113,3 +113,15 @@ def auth(client: FlaskClient) -> AuthActions:
         Initialized auth class to perform user auth actions.
     """
     return AuthActions(client)
+
+
+@pytest.fixture(autouse=True)
+def provide_session_to_factories(app: Flask) -> None:
+    """
+    Factories need a DB session in order to function so this adds it to them for ease of use.
+
+    Args:
+        app: initialized app
+    """
+    for factory in [UserFactory]:
+        factory._meta.sqlalchemy_session = db.session
