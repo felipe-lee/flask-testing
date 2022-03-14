@@ -8,14 +8,15 @@ import pytest
 from _pytest.tmpdir import TempPathFactory
 from flask import Flask
 from flask.testing import FlaskCliRunner, FlaskClient
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug import Response
 
 from flaskr import create_app
-from flaskr.models import db
+from flaskr.models import db as _db
 from tests.factories import UserFactory
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def app(tmp_path_factory: TempPathFactory) -> Iterable[Flask]:
     """
     Initialize app with test config, initialize DB, set up data fixtures, and yield initialized app.
@@ -33,15 +34,34 @@ def app(tmp_path_factory: TempPathFactory) -> Iterable[Flask]:
     )
 
     with app.app_context():
-        db.create_all()
-
-        db.init_app(app)
-
-    yield app
+        yield app
 
 
 @pytest.fixture
-def client(app: Flask) -> FlaskClient:
+def db(app: Flask) -> Iterable[SQLAlchemy]:
+    """
+    Sets up a database and yield it ready for use. Ideally we'd set up a DB once per test session
+    and just roll back the transactions between tests, but can't figure out the transction rollbacks
+    yet...
+
+    Args:
+        app: initialized app
+
+    Returns:
+        db ready for use
+    """
+    _db.init_app(app)
+
+    _db.create_all()
+
+    yield _db
+
+    _db.session.close()
+    _db.drop_all()
+
+
+@pytest.fixture
+def client(app: Flask) -> Iterable[FlaskClient]:
     """
     Returns a test client to interact with the initialized flask app.
 
@@ -51,11 +71,12 @@ def client(app: Flask) -> FlaskClient:
     Returns:
         Client that can be used to interact with initialized app.
     """
-    return app.test_client()
+    with app.test_client() as client:
+        yield client
 
 
 @pytest.fixture
-def runner(app: Flask) -> FlaskCliRunner:
+def runner(app: Flask) -> Iterable[FlaskCliRunner]:
     """
     Returns a CLI client that can run click commands.
 
@@ -65,7 +86,8 @@ def runner(app: Flask) -> FlaskCliRunner:
     Returns:
         Runner that can utilize click commands.
     """
-    return app.test_cli_runner()
+    with app.test_cli_runner() as cli_runner:
+        yield cli_runner
 
 
 class AuthActions:
@@ -116,12 +138,13 @@ def auth(client: FlaskClient) -> AuthActions:
 
 
 @pytest.fixture(autouse=True)
-def provide_session_to_factories(app: Flask) -> None:
+def provide_session_to_factories(app: Flask, db: SQLAlchemy) -> None:
     """
     Factories need a DB session in order to function so this adds it to them for ease of use.
 
     Args:
         app: initialized app
+        db: initialized db
     """
     for factory in [UserFactory]:
         factory._meta.sqlalchemy_session = db.session
