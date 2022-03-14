@@ -17,7 +17,6 @@ from flask import (
 )
 from sqlalchemy.exc import IntegrityError
 from werkzeug import Response
-from werkzeug.security import check_password_hash, generate_password_hash
 
 from flaskr.models import User, db
 
@@ -46,7 +45,7 @@ def register() -> Union[str, Response]:
             error = "Password is required."
 
         if error is None:
-            user = User(username=username, password=generate_password_hash(password))
+            user = User(username=username, password=password)
 
             db.session.add(user)
 
@@ -79,7 +78,7 @@ def login() -> Union[str, Response]:
 
         user = User.query.filter_by(username=username).first()
 
-        if user is None or not check_password_hash(user.password, password):
+        if user is None or not user.check_password(password):
             error = "Incorrect credentials."
 
         if error is None:

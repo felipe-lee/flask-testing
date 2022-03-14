@@ -3,12 +3,26 @@
 Factories for models
 """
 import factory
-from werkzeug.security import generate_password_hash
+from factory.alchemy import SQLAlchemyModelFactory
 
-from flaskr.models import User
+from flaskr.models import User, db
 
 
-class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
+class BaseFactory(SQLAlchemyModelFactory):
+    """
+    Base factory.
+    """
+
+    class Meta:
+        """
+        Factory configuration. Add session for all child factories
+        """
+
+        abstract = True
+        sqlalchemy_session = db.session
+
+
+class UserFactory(BaseFactory):
     """
     Factory for creating users.
     """
@@ -22,9 +36,3 @@ class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     id = factory.Sequence(lambda n: n)
     username = factory.Faker("user_name")
-    password = factory.LazyAttribute(
-        lambda u: generate_password_hash(u.password_plaintext)
-    )
-
-    class Params:
-        password_plaintext = factory.Faker("password")

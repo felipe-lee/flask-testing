@@ -24,7 +24,7 @@ def test_register_returns_registration_page(client: FlaskClient, app: Flask) -> 
 
 
 def test_successful_registration_creates_user_record(
-    client: FlaskClient, app: Flask
+    client: FlaskClient, app: Flask, db: SQLAlchemy
 ) -> None:
     username = "a"
 
@@ -88,7 +88,7 @@ def test_can_login_successfully(
     username = faker.user_name()
     password = faker.password()
 
-    user = User(username=username, password=generate_password_hash(password))
+    user = User(username=username, password=password)
 
     db.session.add(user)
     db.session.commit()
@@ -112,7 +112,7 @@ def test_can_login_successfully(
     ),
 )
 def test_login_validates_input(
-    auth: AuthActions, username: str, password: str, message: str
+    auth: AuthActions, username: str, password: str, message: str, db: SQLAlchemy
 ):
     response = auth.login(username, password)
 

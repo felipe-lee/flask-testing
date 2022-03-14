@@ -13,7 +13,6 @@ from werkzeug import Response
 
 from flaskr import create_app
 from flaskr.models import db as _db
-from tests.factories import UserFactory
 
 
 @pytest.fixture
@@ -41,7 +40,7 @@ def app(tmp_path_factory: TempPathFactory) -> Iterable[Flask]:
 def db(app: Flask) -> Iterable[SQLAlchemy]:
     """
     Sets up a database and yield it ready for use. Ideally we'd set up a DB once per test session
-    and just roll back the transactions between tests, but can't figure out the transction rollbacks
+    and just roll back the transactions between tests, but can't figure out the transaction rollbacks
     yet...
 
     Args:
@@ -57,6 +56,7 @@ def db(app: Flask) -> Iterable[SQLAlchemy]:
     yield _db
 
     _db.session.close()
+
     _db.drop_all()
 
 
@@ -76,7 +76,7 @@ def client(app: Flask) -> Iterable[FlaskClient]:
 
 
 @pytest.fixture
-def runner(app: Flask) -> Iterable[FlaskCliRunner]:
+def runner(app: Flask) -> FlaskCliRunner:
     """
     Returns a CLI client that can run click commands.
 
@@ -86,8 +86,7 @@ def runner(app: Flask) -> Iterable[FlaskCliRunner]:
     Returns:
         Runner that can utilize click commands.
     """
-    with app.test_cli_runner() as cli_runner:
-        yield cli_runner
+    return app.test_cli_runner()
 
 
 class AuthActions:
@@ -98,7 +97,7 @@ class AuthActions:
     def __init__(self, client: FlaskClient) -> None:
         self._client = client
 
-    def login(self, username: str = "test", password: str = "test") -> Response:
+    def login(self, username: str, password: str) -> Response:
         """
         Attempts to log user in using the provided credentials.
 
@@ -135,16 +134,3 @@ def auth(client: FlaskClient) -> AuthActions:
         Initialized auth class to perform user auth actions.
     """
     return AuthActions(client)
-
-
-@pytest.fixture(autouse=True)
-def provide_session_to_factories(app: Flask, db: SQLAlchemy) -> None:
-    """
-    Factories need a DB session in order to function so this adds it to them for ease of use.
-
-    Args:
-        app: initialized app
-        db: initialized db
-    """
-    for factory in [UserFactory]:
-        factory._meta.sqlalchemy_session = db.session
