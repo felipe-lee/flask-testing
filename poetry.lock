@@ -436,6 +436,8 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
 
 [package.dependencies]
 greenlet = {version = "!=0.4.17", markers = "python_version >= \"3\" and (platform_machine == \"aarch64\" or platform_machine == \"ppc64le\" or platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"win32\" or platform_machine == \"WIN32\")"}
+mypy = {version = ">=0.910", optional = true, markers = "python_version >= \"3\" and extra == \"mypy\""}
+sqlalchemy2-stubs = {version = "*", optional = true, markers = "extra == \"mypy\""}
 
 [package.extras]
 aiomysql = ["greenlet (!=0.4.17)", "aiomysql"]
@@ -457,6 +459,17 @@ postgresql_psycopg2binary = ["psycopg2-binary"]
 postgresql_psycopg2cffi = ["psycopg2cffi"]
 pymysql = ["pymysql (<1)", "pymysql"]
 sqlcipher = ["sqlcipher3-binary"]
+
+[[package]]
+name = "sqlalchemy2-stubs"
+version = "0.0.2a20"
+description = "Typing Stubs for SQLAlchemy 1.4"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+typing-extensions = ">=3.7.4"
 
 [[package]]
 name = "toml"
@@ -514,7 +527,7 @@ watchdog = ["watchdog"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "dc30febda3549199027bd744b09d36a61be5d5d506702d6d0e5ee5c4e835cbe9"
+content-hash = "1f79c784a544a75a8c75a981400385e8008f344f909cd4f5c158de9dbc1fb142"
 
 [metadata.files]
 atomicwrites = [
@@ -913,6 +926,10 @@ sqlalchemy = [
     {file = "SQLAlchemy-1.4.32-cp39-cp39-win32.whl", hash = "sha256:1bbac3e8293b34c4403d297e21e8f10d2a57756b75cff101dc62186adec725f5"},
     {file = "SQLAlchemy-1.4.32-cp39-cp39-win_amd64.whl", hash = "sha256:b3f1d9b3aa09ab9adc7f8c4b40fc3e081eb903054c9a6f9ae1633fe15ae503b4"},
     {file = "SQLAlchemy-1.4.32.tar.gz", hash = "sha256:6fdd2dc5931daab778c2b65b03df6ae68376e028a3098eb624d0909d999885bc"},
+]
+sqlalchemy2-stubs = [
+    {file = "sqlalchemy2-stubs-0.0.2a20.tar.gz", hash = "sha256:3e96a5bb7d46a368c780ba57dcf2afbe2d3efdd75f7724ae7a859df0b0625f38"},
+    {file = "sqlalchemy2_stubs-0.0.2a20-py3-none-any.whl", hash = "sha256:da31d0e30a2af2e5ad83dbce5738543a9f488089774f506de5ec7d28d425a202"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
