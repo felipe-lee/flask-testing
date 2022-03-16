@@ -8,17 +8,20 @@ authors = ["Felipe Lee <35938642+felipe-lee@users.noreply.github.com>"]
 python = "^3.10"
 Flask = "^2.0.3"
 Flask-SQLAlchemy = "^2.5.1"
-SQLAlchemy = "^1.4.31"
+psycopg2 = "^2.9.3"
 python-dotenv = "^0.19.2"
+SQLAlchemy = "^1.4.31"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
-pytest = "^7.0.1"
 coverage = "^6.3.2"
+factory-boy = "^3.2.1"
+mypy = "^0.941"
+pre-commit = "^2.17.0"
+pytest = "^7.1.0"
 pytest-cov = "^3.0.0"
 pytest-mock = "^3.7.0"
-mypy = "^0.931"
-pre-commit = "^2.17.0"
+SQLAlchemy = { version = "^1.4.31", extras = ["mypy"] }
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -35,6 +38,42 @@ source = [
 
 [tool.coverage.report]
 show_missing = true
+
+[tool.mypy]
+# The mypy configurations: https://mypy.readthedocs.io/en/latest/config_file.html
+plugins = ["sqlalchemy.ext.mypy.plugin"]
+#mypy_path = "stubs"
+
+# The rules commented out below are ones I'd like to turn on, but can't because 
+# too many things are untyped, or too broadly typed in the flask ecosystem.
+check_untyped_defs = true
+#disallow_any_expr = true
+#disallow_any_decorated = true
+#disallow_any_explicit = true
+#disallow_any_generics = true
+#disallow_subclassing_any = true
+#disallow_any_unimported = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+#disallow_untyped_decorators = true
+disallow_untyped_defs = true
+ignore_errors = false
+implicit_reexport = false
+no_implicit_optional = true
+show_error_codes = true
+#show_none_errors = true
+strict_equality = true
+strict_optional = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["factory", "factory.alchemy", "flask_sqlalchemy"]
+ignore_missing_imports = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
