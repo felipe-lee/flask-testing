@@ -12,4 +12,4 @@ repos:
         entry: scripts/typecheck.sh
         language: script
         pass_filenames: false
-        types: [ python, pyi ]
+        types_or: [python, pyi]
