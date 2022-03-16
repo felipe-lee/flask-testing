@@ -9,10 +9,10 @@ from faker import Faker
 from flask import Flask, g, session
 from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash
 
 from flaskr.models import User
 from tests.conftest import AuthActions
+from tests.factories import UserFactory
 
 
 def test_register_returns_registration_page(client: FlaskClient, app: Flask) -> None:
@@ -58,7 +58,7 @@ def test_register_validates_input(
 ) -> None:
     if create_user:
         with app.app_context():
-            user = User(username=username, password=generate_password_hash(password))
+            user = User(username=username, password=password)
 
             db.session.add(user)
             db.session.commit()
@@ -85,13 +85,9 @@ def test_can_login_successfully(
     faker: Faker,
     db: SQLAlchemy,
 ) -> None:
-    username = faker.user_name()
     password = faker.password()
 
-    user = User(username=username, password=password)
-
-    db.session.add(user)
-    db.session.commit()
+    user = UserFactory(password=password)
 
     response = auth.login(username=user.username, password=password)
 
@@ -101,7 +97,7 @@ def test_can_login_successfully(
 
     assert session["user_id"] == user.id
 
-    assert g.user.username == username
+    assert g.user.username == user.username
 
 
 @pytest.mark.parametrize(
@@ -126,13 +122,9 @@ def test_can_logout(
     app: Flask,
     db: SQLAlchemy,
 ) -> None:
-    username = faker.user_name()
     password = faker.password()
 
-    user = User(username=username, password=generate_password_hash(password))
-
-    db.session.add(user)
-    db.session.commit()
+    user = UserFactory(password=password)
 
     auth.login(username=user.username, password=password)
 
