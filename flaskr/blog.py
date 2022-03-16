@@ -2,8 +2,6 @@
 """
 Code to handle blog and posts
 """
-from typing import Union
-
 from flask import (
     Blueprint,
     abort,
@@ -19,6 +17,7 @@ from werkzeug import Response
 
 from flaskr.auth import login_required
 from flaskr.models import Post, db
+from flaskr.types import ViewResponseType
 
 
 bp = Blueprint("blog", __name__)
@@ -39,7 +38,7 @@ def index() -> str:
 
 @bp.route("/create", methods=("GET", "POST"))
 @login_required
-def create() -> Union[str, Response]:
+def create() -> ViewResponseType:
     """
     Allows a user to create a post.
 
@@ -75,7 +74,7 @@ def create() -> Union[str, Response]:
 
 @bp.route("/<int:post_id>/update", methods=("GET", "POST"))
 @login_required
-def update(post_id: int) -> Union[str, Response]:
+def update(post_id: int) -> ViewResponseType:
     """
     Allows a user to edit a post.
 

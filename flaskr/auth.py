@@ -3,7 +3,7 @@
 Code to handle auth in the project
 """
 import functools
-from typing import Callable, TypeAlias, TypeVar, Union, cast
+from typing import Callable, TypeVar, cast
 
 from flask import (
     Blueprint,
@@ -19,13 +19,14 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug import Response
 
 from flaskr.models import User, db
+from flaskr.types import ViewResponseType
 
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
 @bp.route("/register", methods=("GET", "POST"))
-def register() -> Union[str, Response]:
+def register() -> ViewResponseType:
     """
     Allows a user to register for the website.
 
@@ -62,7 +63,7 @@ def register() -> Union[str, Response]:
 
 
 @bp.route("/login", methods=("GET", "POST"))
-def login() -> Union[str, Response]:
+def login() -> ViewResponseType:
     """
     Allows a user to log in to the website.
 
@@ -119,7 +120,6 @@ def logout() -> Response:
     return redirect(url_for("index"))
 
 
-ViewResponseType: TypeAlias = Union[str, Response]
 F = TypeVar("F", bound=Callable[..., ViewResponseType])
 
 
