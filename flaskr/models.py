@@ -2,13 +2,12 @@
 """
 Database models for app
 """
-from typing import TYPE_CHECKING
+from typing import cast
 
 import click
 from flask import Flask, current_app
 from flask.cli import with_appcontext
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.ext.hybrid import hybrid_property
+from flask_sqlalchemy import DefaultMeta, SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
@@ -25,7 +24,7 @@ class User(BaseModel):
     username = db.Column(db.Text, unique=True, nullable=False)
     _password = db.Column("password", db.Text, nullable=False)
 
-    @hybrid_property
+    @property
     def password(self) -> str:
         """
         Return hashed password.
@@ -33,7 +32,7 @@ class User(BaseModel):
         Returns:
             hashed password
         """
-        return self._password
+        return cast(str, self._password)
 
     @password.setter
     def password(self, value: str) -> None:

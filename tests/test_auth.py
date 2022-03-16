@@ -55,7 +55,7 @@ def test_register_validates_input(
     password: str,
     message: bytes,
     create_user: bool,
-):
+) -> None:
     if create_user:
         with app.app_context():
             user = User(username=username, password=generate_password_hash(password))
@@ -113,7 +113,7 @@ def test_can_login_successfully(
 )
 def test_login_validates_input(
     auth: AuthActions, username: str, password: str, message: str, db: SQLAlchemy
-):
+) -> None:
     response = auth.login(username, password)
 
     assert message in response.data

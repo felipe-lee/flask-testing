@@ -3,7 +3,7 @@
 Code to handle auth in the project
 """
 import functools
-from typing import Any, Callable, TypeVar, Union, cast
+from typing import Callable, TypeAlias, TypeVar, Union, cast
 
 from flask import (
     Blueprint,
@@ -119,7 +119,8 @@ def logout() -> Response:
     return redirect(url_for("index"))
 
 
-F = TypeVar("F", bound=Callable[..., Any])
+ViewResponseType: TypeAlias = Union[str, Response]
+F = TypeVar("F", bound=Callable[..., ViewResponseType])
 
 
 def login_required(view: F) -> F:
@@ -135,7 +136,7 @@ def login_required(view: F) -> F:
     """
 
     @functools.wraps(view)
-    def wrapped_view(**kwargs):
+    def wrapped_view(**kwargs: int) -> ViewResponseType:
         """
         Checks if the user is logged in. If so, calls view with kwargs, otherwise, redirects to the
         login page.

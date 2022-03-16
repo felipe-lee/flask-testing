@@ -3,7 +3,7 @@
 Package containing all the app code. This file will also house the app factory.
 """
 import os
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 import dotenv
 from flask import Flask
@@ -13,7 +13,7 @@ dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)  # take environment variables from .env.
 
 
-def create_app(test_config: Mapping[str, Any] = None) -> Flask:
+def create_app(test_config: Optional[Mapping[str, Any]] = None) -> Flask:
     """
     Initializes the flask app, sets up configuration as needed, initializes the app with the DB,
     and registers the blueprints.

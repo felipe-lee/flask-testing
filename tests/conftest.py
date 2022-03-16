@@ -2,7 +2,7 @@
 """
 Fixtures for tests
 """
-from typing import Iterable
+from collections.abc import Iterable
 
 import pytest
 from _pytest.tmpdir import TempPathFactory
